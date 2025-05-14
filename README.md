@@ -39,7 +39,6 @@ Alerts and thresholds
 
 Uptime, connectivity, and bandwidth graphs
 
-Used Aruba Central mobile app for basic monitoring and alerts.
 
 ## 🔄 Firmware Management
 Scheduled and performed firmware upgrades for switches and APs.
