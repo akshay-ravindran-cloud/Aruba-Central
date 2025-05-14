@@ -1,0 +1,40 @@
+### Aruba Device Firmware Upgrade  Simplified Guide
+Managing firmware for different Aruba device models is straightforward when following the right steps.
+
+## Switch Firmware Upgrade
+Switches must be upgraded one by one.
+
+## Navigate to the Firmware section in Aruba Central.
+
+# Choose Standard or Live firmware track.
+
+Select the recommended version.
+
+## Enable auto reboot to complete the upgrade process.
+
+Access Point (AP) Firmware Upgrade
+Go to the specific site in Aruba Central.
+
+Ensure no clients are connected or there's planned downtime.
+
+Navigate to WLAN > Firmware.
+
+Enable Set Compliance to check for firmware mismatches.
+
+For Same Model APs:
+Select all and apply the same firmware.
+
+Proceed with Standard upgrade.
+
+For Different Model APs:
+Upgrade one model at a time with the appropriate firmware version.
+
+Tip: Use Live Mode for AP Firmware Upgrades
+Live Mode allows APs to upgrade in batches.
+
+During upgrade, clients seamlessly roam to other available APs.
+
+This ensures zero downtime or connectivity disruption for users.
+
+
+

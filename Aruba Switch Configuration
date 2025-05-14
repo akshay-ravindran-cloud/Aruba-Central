@@ -1,0 +1,152 @@
+hostname <HOSTNAME>
+
+banner motd !
+**********************************************************************************
+| <ORGANIZATION NAME>                                                           |
+| WARNING: Unauthorized access is prohibited.                                   |
+| Device monitored for security and compliance.                                 |
+**********************************************************************************
+!
+
+# --- User Configuration ---
+# --- adding username with plaintext ----
+user <ADMIN_USER> group administrators password plaintext <PLAINTEXT_PASSWORD>
+user <SECOPS_USER> group administrators password ciphertext <PLAINTEXT_PASSWORD>
+
+# --- Loop Protection ---
+loop-protect re-enable-timer <SECONDS>
+
+
+# NTP (Network Time Protocol) is used to keep the correct date 
+# and time on network devices like switches and routers.
+# --- NTP Configuration ---
+ntp server <NTP_SERVER_1> prefer
+ntp server <NTP_SERVER_2>
+ntp enable
+
+# --- Session Timeout ---
+cli-session
+    timeout <TIMEOUT_MINUTES>
+
+# --- TACACS+ Authentication ---
+# tacacs server ip for authentication
+tacacs-server host <TACACS_IP_1> timeout 30 key ciphertext <ENCRYPTED_KEY_1>
+tacacs-server host <TACACS_IP_2> timeout 30 key ciphertext <ENCRYPTED_KEY_2>
+
+# aaa adding tacacs server group and server IP
+aaa group server tacacs <GROUP_NAME>
+    server <TACACS_IP_1>
+    server <TACACS_IP_2>
+
+
+# aaa authentication
+aaa authentication login default group <GROUP_NAME> tacacs local
+aaa authentication login ssh group <GROUP_NAME> local
+aaa authorization commands default group <GROUP_NAME> tacacs local
+aaa accounting all-mgmt default start-stop group <GROUP_NAME>
+
+# --- Syslog IP ---
+# It tells the switch to send log messages 
+# to a syslog server at <SYSLOG_IP_1> with a severity level of "debug".
+logging <SYSLOG_IP_1> severity debug
+logging <SYSLOG_IP_2> severity debug
+
+# --- Object Groups for ACL ---
+# in cisco we used access-list here we use object-group
+object-group ip address NTP_SERVERS
+    10 <NTP_SERVER_1>
+    20 <NTP_SERVER_2>
+
+object-group ip address SNMP_CLIENTS
+    10 <MGMT_IP_1>
+    20 <MGMT_IP_2>
+
+object-group ip address SSH_CLIENTS
+    10 <ADMIN_PC_IP>
+    20 <SEC_ENGINE_IP>
+
+
+# ADD SVI VLAN in shutdown state during staging and when the migration happened we used to 
+# add the vlans (10,15... 300,...)
+
+# --- VLANs ---
+vlan <VLAN_ID_1>
+    name <VLAN_NAME_1>
+vlan <VLAN_ID_2>
+    name <VLAN_NAME_2>
+...
+#In networking spanning tree protocol is used to prevent loops
+
+# ## Why Spanning Tree is Needed:
+# In network multiple switches can be connected - and it creates redundancy.
+# that is ,if one path fails, the traffic can still flow through another path. 
+# this is good for reliability - if there is many paths - then its hard to manage
+# it causes broadcast storms and loops. This happens when data packets 
+# circulate endlessly in the loop, wasting network resources and causing a network to crash.
+
+
+
+# --- Spanning Tree ---
+spanning-tree mode rpvst
+spanning-tree
+spanning-tree vlan <VLAN_LIST>
+spanning-tree vlan <VLAN_ID> priority <PRIORITY>
+
+# --- Interface Example (Access Port) ---
+interface <PORT>
+    description <DESCRIPTION>
+    no shutdown
+    no routing
+    vlan access <VLAN_ID>
+    spanning-tree port-type admin-edge
+    spanning-tree bpdu-guard
+    loop-protect
+
+# --- Interface Example (Trunk Port) ---
+interface <UPLINK_PORT>
+    description <UPLINK_DESCRIPTION>
+    no shutdown
+    no routing
+    vlan trunk native <VLAN_ID>
+    vlan trunk allowed <VLAN_LIST>
+
+# --- VLAN Interface (SVI) ---
+interface vlan <VLAN_ID>
+    description <VLAN_DESCRIPTION>
+    ip address <IP_ADDRESS>/<MASK>
+    ip ospf 1 area 0.0.0.0
+    ip helper-address <DHCP_SERVER>
+
+# --- SNMP ---
+snmp-server vrf default
+snmp-server system-description <DESCRIPTION>
+snmp-server system-location <SITE_NAME>
+snmp-server system-contact <CONTACT_EMAIL>
+snmp-server snmpv3-only
+
+snmpv3 user <ROUSER> auth sha auth-pass ciphertext <ENCRYPTED> priv aes priv-pass ciphertext <ENCRYPTED> access-level ro
+snmpv3 user <RWUSER> auth sha auth-pass ciphertext <ENCRYPTED> priv aes priv-pass ciphertext <ENCRYPTED> access-level rw
+
+# --- DNS ---
+ip dns domain-name <DOMAIN>
+ip dns server-address <DNS_1>
+ip dns server-address <DNS_2>
+
+# --- OSPF ---
+router ospf 1
+    router-id <ROUTER_ID>
+    passive-interface default
+    area 0.0.0.0
+
+# --- DHCP Relay ---
+ip source-interface dhcp_relay interface vlan<VLAN_ID>
+dhcp-relay option 82 source-interface
+
+# --- QoS (Optional) ---
+qos schedule-profile <PROFILE_NAME>
+    dwrr queue 0 weight 25
+    ...
+    strict queue 7
+
+# --- Save Configuration ---
+write memory

@@ -1,0 +1,10 @@
+### Bug Identification and Reporting – Aruba AP (500 Series)
+Identified a band steering bug in specific Aruba AP 500 Series models running a particular ArubaOS version.
+
+Analyzed client connectivity issues and isolated the root cause related to band steering behavior under dual-band environments.
+
+Raised a TAC case with Aruba Support and coordinated with the vendor for resolution.
+
+Documented the affected models and firmware versions, and notified the internal team to avoid deploying those OS versions in production.
+
+The discovery directly contributed to improved OS upgrade planning and stability of future wireless deployments.
